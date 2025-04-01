@@ -42,6 +42,11 @@ class PaymentController extends Controller {
                 'message' => 'Payment successful',
                 'transaction' => $transaction
             ], 200);
+        } elseif ($transaction->status === 'Pending') {
+                return response()->json([
+                    'message' => 'Payment Pending, please check the payment status after sometime',
+                    'transaction' => $transaction
+                ], 200);
         } else {
             return response()->json([
                 'message' => 'Payment failed',

@@ -116,7 +116,7 @@
                 hiddenInput.setAttribute("value", token.id);
                 form.appendChild(hiddenInput);
 
-                form.submit(); // Now submit the form
+                form.submit();
             }
         });
 
