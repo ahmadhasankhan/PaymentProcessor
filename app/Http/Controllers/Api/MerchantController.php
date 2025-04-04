@@ -50,7 +50,7 @@ class MerchantController extends Controller
         return response()->json([
             'status' => $response['status'],
             'message' => $response['message']
-        ], $response['status'] === 'Success' ? 200 : ($response['status'] === 'Pending' ? 202 : 400));
+        ], $response['status'] === 'completed' ? 200 : ($response['status'] === 'pending' ? 202 : 400));
 
     }
 }
