@@ -1,49 +1,39 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Services\CardPaymentService;
 use App\Services\CryptoPaymentService;
 use Illuminate\Http\Request;
-use App\Services\CardPaymentService;
 use App\Models\Transaction;
 use App\Models\Merchant;
-use App\Models\CryptoTransaction;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 
 class TransactionController extends Controller
 {
-    public function store(Request $request, CardPaymentService $cardService, CryptoPaymentService $cryptoService)
+    public function showPaymentForm()
     {
-        // Validate Input
+        $merchants = Merchant::all();
+        return view('payment-form', compact('merchants'));
+    }
+
+    public function process(Request $request, CardPaymentService $cardService, CryptoPaymentService $cryptoService)
+    {
         $request_data = $request->all();
-        Log::info($request_data);
-        $validator = Validator::make($request_data, [
-            'first_name' => 'required|string|max:50',
-            'last_name' => 'required|string|max:50',
+        Log::info('Received payment request with transaction data:', $request_data);
+
+        $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
             'address' => 'required|string',
-            'zip_code' => 'required|string|max:10',
-            'country' => 'required|string|max:50',
+            'zip_code' => 'required|string',
+            'country' => 'required|string',
             'amount' => 'required|numeric|min:1',
-            'transaction_type' => 'required|in:deposit,withdrawal',
-            'merchant' => 'required|in:VISA,MasterCard,USDT,Bitcoin,Litecoin',
-            'card_number' => 'nullable|required_if:merchant,VISA,MasterCard|digits:16',
-            'cvv' => 'nullable|required_if:merchant,VISA,MasterCard|digits:3',
-            'expiry_date' => 'nullable|required_if:merchant,VISA,MasterCard|date_format:m/y',
-            'wallet_address' => 'nullable|required_if:merchant,USDT,Bitcoin,Litecoin'
+            'transaction_type' => 'required|in:Deposit,Withdrawal',
+            'merchant' => 'required|exists:merchants,name',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['status' => 'Failed', 'error' => $validator->errors()], 400);
-        }
-
-        $merchant = Merchant::where('name', $request->merchant)->first();
-
-        if (!$merchant) {
-            return response()->json(['status' => 'error', 'message' => 'Invalid merchant.'], 400);
-        }
-
+        $merchant = Merchant::where('name', $request->merchant)->firstOrFail();
         $transaction = Transaction::create([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
@@ -53,10 +43,11 @@ class TransactionController extends Controller
             'amount' => $request->amount,
             'transaction_type' => $request->transaction_type,
             'merchant_id' => $merchant->id,
-            'status' => 'pending',
+            'status' => 'initiated',
         ]);
 
         if ($merchant->type === 'card') {
+            Log::info('Calling cardService');
             $cardResponse = $cardService->process(['card_number' => $request->card_number, 'cvv' => $request->cvv,
                 'expiry_date' => $request->expiry_date, 'amount' => $request->amount], $transaction->id);
 
@@ -75,6 +66,7 @@ class TransactionController extends Controller
                 default => fn() => null,
             };
             if ($response = $statusAction()) {
+                Log::info("Card has been processed {$response}");
                 return $response;
             }
         } else {
@@ -113,38 +105,10 @@ class TransactionController extends Controller
             }
         }
 
-
         Log::info("Transaction processed: ", $transaction->toArray());
         return response()->json([
             'message' => 'Something went wrong.',
             'transaction' => $transaction
         ], 201);
     }
-
-    public function completeCryptoTransaction(Request $request, int $id)
-    {
-        $request->validate([
-            'transaction_hash' => 'required|string'
-        ]);
-
-        $transaction = Transaction::findOrFail($id);
-
-        // Ensure this is a crypto transaction
-        $crypto = CryptoTransaction::where('transaction_id', $transaction->id)->first();
-
-        if (!$crypto) {
-            return response()->json(['message' => 'It is not a crypto transaction.'], 400);
-        }
-
-        if ($crypto->status !== 'pending') {
-            return response()->json(['message' => 'Transaction already completed or failed.'], 400);
-        }
-
-        $crypto->update(['status' => 'completed']);
-        $transaction->update(['status' => 'completed']);
-
-        return response()->json(['message' => 'Transaction marked as completed']);
-    }
 }
-
-

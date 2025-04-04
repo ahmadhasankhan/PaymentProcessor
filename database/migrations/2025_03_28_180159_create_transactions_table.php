@@ -22,8 +22,6 @@ return new class extends Migration
             $table->enum('transaction_type', ['deposit', 'withdrawal']);
             $table->foreignId('merchant_id')->index();
             $table->string('status')->default('pending');
-            $table->string('transaction_id')->nullable();
-            $table->string('wallet_address')->nullable();
             $table->text('error_message')->nullable();
             $table->timestamps();
         });

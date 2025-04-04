@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\TransactionController;
 
-Route::get('/', [PaymentController::class, 'showPaymentForm'])->name('pay');
-Route::post('/payment/process', [PaymentController::class, 'processPayment'])->name('process.payment');
+Route::get('/', [TransactionController::class, 'showPaymentForm'])->name('pay');
+Route::post('/transaction', [TransactionController::class, 'process'])->name('process.payment');

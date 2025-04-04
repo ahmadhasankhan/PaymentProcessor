@@ -4,14 +4,14 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateMerchantsTable extends Migration
+return new class extends Migration
 {
     public function up()
     {
         Schema::create('merchants', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
-            $table->string('type'); 
+            $table->string('type');
             # $table->json('required_fields'); Not implemented
             $table->timestamps();
         });
@@ -21,4 +21,4 @@ class CreateMerchantsTable extends Migration
     {
         Schema::dropIfExists('merchants');
     }
-}
+};

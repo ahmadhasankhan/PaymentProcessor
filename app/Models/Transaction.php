@@ -7,24 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class Transaction extends Model
 {
     protected $fillable = [
-        'first_name',
-        'last_name',
-        'address',
-        'zip_code',
-        'country',
-        'amount',
-        'transaction_type',
-        'transaction_id',
-        'merchant_id',
-        'card_number',
-        'expiration_date',
-        'cvv',
-        'wallet_address',
-        'status',
-        'error_message'
+        'first_name', 'last_name', 'address', 'zip_code', 'country', 'amount',
+        'transaction_type', 'merchant_id', 'status'
     ];
 
-    public function merchant(){
+    public function merchant()
+    {
         return $this->belongsTo(merchant::Class);
     }
 }

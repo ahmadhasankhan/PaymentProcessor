@@ -2,29 +2,28 @@
 
 namespace App\Services;
 
-use App\Models\Transaction;
+use App\Models\CryptoTransaction;
 use Illuminate\Support\Facades\Log;
-
 class CryptoPaymentService
 {
-    public function checkPendingTransactions()
+    protected CryptoSimulationService $cryptoSimulationService;
+
+    public function __construct(CryptoSimulationService $cryptoSimulationService)
     {
-        // Fetch pending transactions
-        $pendingTransactions = Transaction::where('status', 'Pending')->get();
-
-        foreach ($pendingTransactions as $transaction) {
-            // Simulate checking the real status (this should be replaced with an actual API call)
-            $newStatus = $this->getTransactionStatus($transaction);
-
-            // Update the transaction status
-            $transaction->update(['status' => $newStatus]);
-            Log::info("Updated crypto transaction {$transaction->id} status to {$newStatus}");
-        }
+        $this->cryptoSimulationService = $cryptoSimulationService;
     }
 
-    private function getTransactionStatus($transaction)
+    public function process($cryptoDetails, int $transactionId)
     {
-        // Dummy logic - In reality, fetch the status from a blockchain API and update the traction
-        return rand(0, 1) ? 'Completed' : 'Pending';
+        $response = $this->cryptoSimulationService->check($cryptoDetails);
+        Log::info("Crypto simulation result status: {$response['status']}");
+        // Create card transaction record regardless of success/failure
+        CryptoTransaction::create([
+            'transaction_id' => $transactionId,
+            'wallet_address' => $cryptoDetails['wallet_address'],
+            'transaction_hash' => $cryptoDetails['transaction_hash'],
+            'status' => $response['status']
+        ]);
+        return $response;
     }
 }
