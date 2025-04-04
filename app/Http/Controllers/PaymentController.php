@@ -9,7 +9,7 @@ use App\Models\Transaction;
 use App\Models\Merchant;
 use Illuminate\Support\Facades\Log;
 
-class TransactionController extends Controller
+class PaymentController extends Controller
 {
     public function showPaymentForm()
     {

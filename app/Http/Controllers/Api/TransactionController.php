@@ -30,7 +30,18 @@ class TransactionController extends Controller
             'merchant' => 'required|in:VISA,MasterCard,USDT,Bitcoin,Litecoin',
             'card_number' => 'nullable|required_if:merchant,VISA,MasterCard|digits:16',
             'cvv' => 'nullable|required_if:merchant,VISA,MasterCard|digits:3',
-            'expiry_date' => 'nullable|required_if:merchant,VISA,MasterCard|date_format:m/y',
+            'expiry_date' => ['nullable', 'regex:/^(0[1-9]|1[0-2])\/\d{2}$/', function ($attribute, $value, $fail) {
+                [$month, $year] = explode('/', $value);
+                $month = (int) $month;
+                $year = (int) ('20' . $year);
+
+                $expiry = \Carbon\Carbon::createFromDate($year, $month, 1)->startOfMonth();
+                $now = \Carbon\Carbon::now()->startOfMonth();
+
+                if ($expiry->lt($now)) {
+                    $fail('The ' . $attribute . ' cannot be in the past.');
+                }
+            }],
             'wallet_address' => 'nullable|required_if:merchant,USDT,Bitcoin,Litecoin'
         ]);
 

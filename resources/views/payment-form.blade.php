@@ -69,7 +69,8 @@
             <input name="card_number" type="text" placeholder="Card Number"
                    class="border p-3 rounded w-full bg-gray-100">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input name="expiry_date" type="text" placeholder="MM/YY" class="border p-2 rounded w-full bg-gray-100">
+                <input name="expiry_date" id="expiry_date" type="text" placeholder="MM/YY"
+                       class="border p-2 rounded w-full bg-gray-100">
                 <input name="cvv" type="text" placeholder="CVV" class="border p-2 rounded w-full bg-gray-100">
             </div>
 
@@ -87,29 +88,6 @@
         </button>
     </form>
 </div>
-
-<script>
-    const merchantSelect = document.getElementById('merchant');
-    const cardFields = document.getElementById('card-fields');
-    const cryptoFields = document.getElementById('crypto-fields');
-
-    merchantSelect.addEventListener('change', function () {
-        const value = this.value;
-        cardFields.classList.add('hidden');
-        cryptoFields.classList.add('hidden');
-
-        if (value === 'VISA' || value === 'MasterCard') {
-            cardFields.classList.remove('hidden');
-        } else if (value === 'USDT' || value === 'Bitcoin' || value === 'Litecoin') {
-            cryptoFields.classList.remove('hidden');
-        }
-    });
-</script>
-
-<style>
-    .input {
-        @apply w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500;
-    }
-</style>
+<script src="{{ asset('js/payment-form.js') }}"></script>
 </body>
 </html>
