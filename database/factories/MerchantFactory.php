@@ -2,19 +2,25 @@
 
 namespace Database\Factories;
 
-use App\Models\Merchant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Merchant>
+ */
 class MerchantFactory extends Factory
 {
-    protected $model = Merchant::class;
-
-    public function definition()
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition(): array
     {
-        $type = fake()->randomElement(['card', 'crypto']);
-
+        $type = $this->faker->randomElement(['card', 'crypto']);
         return [
-            'name' => $type === 'card' ? 'VISA' : 'Bitcoin',
+            'name' => $type === 'card'
+                ? $this->faker->randomElement(['VISA', 'MasterCard'])
+                : $this->faker->randomElement(['USDT', 'Bitcoin', 'Litecoin']),
             'type' => $type,
         ];
     }
